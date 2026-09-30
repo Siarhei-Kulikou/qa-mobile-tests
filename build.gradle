@@ -1,0 +1,58 @@
+plugins {
+    id 'java'
+}
+
+group = 'com.alfabank.qa'
+version = '1.0'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+repositories {
+    mavenCentral()
+}
+
+def allureVersion = '2.29.1'
+def aspectjVersion = '1.9.22'
+
+configurations {
+    agent {
+        canBeResolved = true
+        canBeConsumed = false
+    }
+}
+
+dependencies {
+    testImplementation 'io.appium:java-client:9.5.0'
+    testImplementation 'org.testng:testng:7.10.2'
+    testImplementation 'org.assertj:assertj-core:3.26.3'
+    testImplementation "io.qameta.allure:allure-testng:${allureVersion}"
+    testImplementation 'org.slf4j:slf4j-simple:2.0.13'
+    agent "org.aspectj:aspectjweaver:${aspectjVersion}"
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+test {
+    useTestNG()
+    defaultCharacterEncoding = 'UTF-8'
+
+    // AspectJ-агент нужен Allure для работы аннотации @Step
+    doFirst {
+        jvmArgs "-javaagent:${configurations.agent.singleFile}"
+    }
+
+    // Позволяет переопределять настройки: ./gradlew test -Dappium.url=http://127.0.0.1:4723
+    systemProperties System.getProperties().findAll { k, v ->
+        k.toString().startsWith('appium.') || k.toString().startsWith('device.') || k.toString().startsWith('app.')
+    }
+
+    testLogging {
+        events 'passed', 'failed', 'skipped'
+        exceptionFormat = 'short'
+    }
+}
