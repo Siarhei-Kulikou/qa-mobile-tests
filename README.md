@@ -29,3 +29,19 @@
 - Поле логина не ограничивает ввод 50 символами
 - Кнопка называется «Вход», в требованиях — «Войти»
 - Фильтрации недопустимых символов в логине нет (сообщения InvalidValue/ExceptValue отсутствуют)
+
+## Подготовка окружения
+
+1. Установить JDK 17, Node.js 22 (LTS), Android Studio (SDK и эмулятор).
+2. Установить Appium и драйвер:
+   `npm install -g appium && appium driver install uiautomator2`
+3. Собрать приложение из https://github.com/lunin-vadim/qa-mobile:
+   - в репозитории нет Gradle wrapper, нужен Gradle 7.4.2 (`gradle wrapper --gradle-version 7.4.2`);
+   - в `LoginUseCase.kt` в ветке `else` опечатка `LoginResult.Error()-`, её нужно исправить на `LoginResult.Error()`, иначе проект не компилируется;
+   - собрать APK: `./gradlew assembleDebug` (результат: `app/build/outputs/apk/debug/app-debug.apk`).
+4. Создать эмулятор (например, Pixel 6, Android 14, образ arm64 для Apple Silicon), запустить его и установить APK: `adb install -r app-debug.apk`.
+5. Запустить `appium` и затем `./gradlew test`.
+
+## Результат прогона
+
+3 теста проходят, 2 падают намеренно (дефекты приложения, см. выше). Allure-отчёт: `allure serve build/allure-results`.
